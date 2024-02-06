@@ -6,7 +6,7 @@ const FileEncryption = () => {
   const [decryptedData, setDecryptedData] = useState(null);
   const [encryptedFile, setEncryptedFile] = useState(null);
 
-  // Function to generate RSA key pair and save it to local storage
+  // ------------------------Function to generate RSA key pair and save it to local storage--------------------------------
   const generateKeyPair = useCallback(async () => {
     try {
       const keyPair = await window.crypto.subtle.generateKey(
@@ -33,7 +33,7 @@ const FileEncryption = () => {
     }
   }, []);
 
-  // Function to load RSA key pair from local storage
+  // --------------------------Function to load RSA key pair from local storage------------------------------------
   const loadKeys = useCallback(async () => {
     const publicKeyBase64 = localStorage.getItem('publicKey');
     const privateKeyBase64 = localStorage.getItem('privateKey');
@@ -95,19 +95,18 @@ const FileEncryption = () => {
     setEncryptedFile(selectedEncryptedFile);
   };
 
+  // ------------------------------------ function to encrypt file ---------------------------------------------
   const handleEncrypt = async () => {
     if (!file) {
       alert('Please select a file');
       return;
     }
-
     // Check if key pair exists, generate if not
     if (!keyPair) {
       await generateKeyPair();
       const loadedKeyPair = await loadKeys(); // Reload keys after generation
       setKeyPair(loadedKeyPair);
     }
-
     try {
       // Read file content
       const fileBuffer = await file.arrayBuffer();
@@ -127,19 +126,18 @@ const FileEncryption = () => {
     }
   };
 
+  // ------------------------------------- function to decrypt file -------------------------------------------------
   const handleDecrypt = async () => {
     if (!encryptedFile) {
       alert('Please select an encrypted file');
       return;
     }
-
     // Check if key pair exists, generate if not
     if (!keyPair) {
       await generateKeyPair();
       const loadedKeyPair = await loadKeys(); // Reload keys after generation
       setKeyPair(loadedKeyPair);
     }
-
     try {
       // Read encrypted file content
       const encryptedFileBuffer = await encryptedFile.arrayBuffer();
@@ -176,7 +174,7 @@ const FileEncryption = () => {
                     href={`data:application/octet-stream;base64,${btoa(
                         String.fromCharCode.apply(null, encryptedData)
                     )}`}
-                    download="encryptedFile.bin"
+                    download="encryptedFile.txt"
                     >
                     Download Encrypted File
                     </a>
@@ -195,7 +193,7 @@ const FileEncryption = () => {
                     href={`data:application/octet-stream;base64,${btoa(
                         String.fromCharCode.apply(null, decryptedData)
                     )}`}
-                    download="decryptedFile.bin"
+                    download="decryptedFile.txt"
                     >
                     Download Decrypted File
                     </a>

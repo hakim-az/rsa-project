@@ -240,24 +240,24 @@ const CryptoApp = () => {
     return (
         <div className='bg-blue-400 w-full h-screen'>
             {/* title */}
-            <h1 className='text-5xl text-center font-bold py-10'>Hybrid AES File Encryption/Decryption in JavaScript</h1>
+            <h1 className='text-5xl text-center font-bold py-10'>Hybrid File Encryption/Decryption in JavaScript</h1>
             {/* content */}
             <div className="container mx-auto w-full flex flex-col">
                 {/* input */}
-                <input className='bg-white self-center w-96 rounded-md p-2' type="file" onChange={handleFileChange} />
+                <input className='bg-white self-center w-1/3 rounded-md p-2' type="file" onChange={handleFileChange} />
                 {/* Key generation and ENC/DEC buttons */}
-                <div className='w-1/2 mx-auto mt-10 flex items-center justify-evenly'>
-                    <button className='bg-black text-white py-2 w-1/4 rounded-md' onClick={generateKeyPair}>Generate Key Pair</button>
-                    <button className='bg-black text-white py-2 w-1/4 rounded-md' onClick={generateSymmetricKey}>Generate Symmetric Key</button>
-                    <button className='bg-black text-white py-2 w-1/4 rounded-md' onClick={encryptFile}>Encrypt File</button>
-                    <button className='bg-black text-white py-2 w-1/4 rounded-md' onClick={decryptFile}>Decrypt File</button>
+                <div className='w-1/2 mx-auto mt-10 flex items-center justify-around space-x-2'>
+                    <button className='bg-black text-white py-2 w-1/4 rounded-md hover:bg-white hover:text-black' onClick={generateKeyPair}>Generate Key Pair</button>
+                    <button className='bg-black text-white py-2 w-1/4 rounded-md hover:bg-white hover:text-black' onClick={generateSymmetricKey}>Generate Symmetric Key</button>
+                    <button className='bg-black text-white py-2 w-1/4 rounded-md hover:bg-white hover:text-black' onClick={encryptFile}>Encrypt File</button>
+                    <button className='bg-black text-white py-2 w-1/4 rounded-md hover:bg-white hover:text-black' onClick={decryptFile}>Decrypt File</button>
                 </div>
                 {/* Download buttons */}
                 <div className='flex items-center justify-around w-full mt-14'>
                     {encryptedFile && (
                         <div className='w-1/3 bg-white rounded-md p-5 flex flex-col'>
                             <h2 className='text-xl font-bold mb-2'>Encrypted File</h2>
-                            <a className='bg-black text-white py-2 w-2/3 inline-block text-center mx-auto rounded-md self-center mt-10' href={URL.createObjectURL(encryptedFile)} download="encrypted-file">
+                            <a className='bg-black text-white py-2 w-2/3 inline-block text-center mx-auto rounded-md self-center mt-10 hover:bg-blue-300 border-2 hover:text-black' href={URL.createObjectURL(encryptedFile)} download="encrypted-file">
                                 Download Encrypted File
                             </a>
                         </div>
@@ -266,7 +266,7 @@ const CryptoApp = () => {
                     {decryptedFile && (
                         <div className='w-1/3 bg-white rounded-md p-5 flex flex-col'>
                             <h2 className='text-xl font-bold mb-2'>Decrypted File</h2>
-                            <a className='bg-black text-white py-2 w-2/3 inline-block text-center mx-auto rounded-md self-center mt-10' href={URL.createObjectURL(decryptedFile)} download="decrypted-file">
+                            <a className='bg-black text-white py-2 w-2/3 inline-block text-center mx-auto rounded-md self-center mt-10 hover:bg-blue-300 border-2 hover:text-black' href={URL.createObjectURL(decryptedFile)} download="decrypted-file">
                                 Download Decrypted File
                             </a>
                         </div>

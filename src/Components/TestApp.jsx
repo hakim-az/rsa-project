@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import QRCode from 'qrcode.react';
 
-const CryptoApp = () => {
+
+const TestApp = () => {
     // states
     const [file, setFile] = useState(null);
     const [encryptedFile, setEncryptedFile] = useState(null);
@@ -8,6 +10,8 @@ const CryptoApp = () => {
     const [symmetricKey, setSymmetricKey] = useState(null);
     const [publicKey, setPublicKey] = useState(null);
     const [privateKey, setPrivateKey] = useState(null);
+    const [privateKeyString, setPrivateKeyString] = useState('');
+
 
     // handle file change
     const handleFileChange = (event) => {
@@ -15,7 +19,11 @@ const CryptoApp = () => {
         setFile(selectedFile);
     };
 
-    // generate asymmetric key pair
+    const arrayBufferToBase64 = (buffer) => {
+        const binary = String.fromCharCode(...new Uint8Array(buffer));
+        return btoa(binary);
+    };
+
     const generateKeyPair = async () => {
         const keyPair = await window.crypto.subtle.generateKey(
             {
@@ -27,10 +35,17 @@ const CryptoApp = () => {
             true,
             ['encrypt', 'decrypt']
         );
-
+    
         setPublicKey(keyPair.publicKey);
         setPrivateKey(keyPair.privateKey);
+
+    
+        // Convert private key to a string
+        const exportedPrivateKey = await window.crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
+        const privateKeyString = arrayBufferToBase64(exportedPrivateKey);
+        setPrivateKeyString(privateKeyString);
     };
+    
 
     // generate symmetric key
     const generateSymmetricKey = async () => {
@@ -117,10 +132,19 @@ const CryptoApp = () => {
         setDecryptedFile(decryptedBlob);
     };
 
+    
+
     return (
         <div className='bg-blue-400 w-full h-screen'>
             {/* title */}
             <h1 className='text-5xl text-center font-bold py-10'>Hybrid File Encryption/Decryption in JavaScript</h1>
+            {/* QR code for private key */}
+            {privateKeyString && (
+                <div className='w-1/3 bg-white rounded-md p-5 flex flex-col mx-auto mb-20 items-center'>
+                    <h2 className='text-xl font-bold mb-2'>Private Key QR Code</h2>
+                    <QRCode value={privateKeyString} size={256} level="M" />
+                </div>
+            )}
             {/* content */}
             <div className="container mx-auto w-full flex flex-col">
                 {/* input */}
@@ -157,5 +181,5 @@ const CryptoApp = () => {
     );
 };
 
-export default CryptoApp;
+export default TestApp;
 

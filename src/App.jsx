@@ -1,13 +1,13 @@
 import './App.css'
-// import FileEncryption from './Components/FileEncryption'
-import CryptoApp from './Components/CryptoApp'
+// import CryptoApp from './Components/CryptoApp'
+import TestApp from './Components/TestApp'
 
 function App() {
 
   return (
     <>
-      {/* <FileEncryption/> */}
-      <CryptoApp/>
+      {/* <CryptoApp/> */}
+      <TestApp/>
     </>
   )
 }

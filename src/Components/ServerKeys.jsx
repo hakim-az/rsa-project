@@ -3,7 +3,7 @@ import backendKeys from '../keys.json';
 import { importPublicKey, importPrivateKey, importSymmetricKey } from './utils/cryptoUtils';
 
 
-const TestApp = () => {
+const ServerKeys = () => {
     // States
     const [file, setFile] = useState(null);
     const [encryptedFile, setEncryptedFile] = useState(null);
@@ -148,4 +148,4 @@ const TestApp = () => {
     );
 };
 
-export default TestApp;
+export default ServerKeys;

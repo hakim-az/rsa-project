@@ -39,10 +39,16 @@ const CryptoApp = () => {
         setPublicKey(keyPair.publicKey);
         setPrivateKey(keyPair.privateKey);
 
+        // Convert public key to a string
+        const exportedPublicKey = await window.crypto.subtle.exportKey('spki', keyPair.publicKey);
+        const publicKeyString = arrayBufferToBase64(exportedPublicKey);
+        console.log('publicKeyString', publicKeyString);
+
     
         // Convert private key to a string
         const exportedPrivateKey = await window.crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
         const privateKeyString = arrayBufferToBase64(exportedPrivateKey);
+        console.log('privateKeyString', privateKeyString);
         setPrivateKeyString(privateKeyString);
     };
     
@@ -57,6 +63,15 @@ const CryptoApp = () => {
             true,
             ['encrypt', 'decrypt']
         );
+        // Export the raw key material
+        const keyMaterial = await window.crypto.subtle.exportKey('raw', key);
+
+        // Convert key material to base64 string
+        const keyAsString = arrayBufferToBase64(keyMaterial);
+
+        // Log the symmetric key as a string
+        console.log('Symmetric Key as String:', keyAsString);
+
         setSymmetricKey(key);
     };
 
@@ -88,6 +103,10 @@ const CryptoApp = () => {
             publicKey,
             rawSymmetricKey
         );
+
+        // Convert encrypted symmetric key to a string
+        const encryptedSymmetricKeyString = arrayBufferToBase64(encryptedSymmetricKey);
+        console.log('encryptedSymmetricKeyString', encryptedSymmetricKeyString);
 
         // Concatenate IV, encrypted symmetric key, and encrypted data
         const encryptedData = new Uint8Array([...iv, ...new Uint8Array(encryptedSymmetricKey), ...new Uint8Array(encryptedBuffer)]);

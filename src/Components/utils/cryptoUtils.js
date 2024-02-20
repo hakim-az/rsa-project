@@ -1,3 +1,31 @@
+// Decrypt symmetric key
+export const decryptSymmetricKey = async (symmetricKeyParams, privateKeyParams) => {
+    try {
+      // Convert the PEM-encoded private key to CryptoKey
+      const privateKey = await importPrivateKey(privateKeyParams);
+  
+      // Decode the base64-encoded encrypted symmetric key
+      const encryptedSymmetricKeyBuffer = base64UrlDecode(symmetricKeyParams);
+  
+      // Decrypt the symmetric key using RSA-OAEP algorithm
+      const decryptedSymmetricKeyBuffer = await window.crypto.subtle.decrypt(
+        {
+          name: 'RSA-OAEP',
+        },
+        privateKey,
+        encryptedSymmetricKeyBuffer
+      );
+  
+      // Convert Uint8Array to base64 string
+      const decryptedSymmetricKeyBase64 = btoa(String.fromCharCode.apply(null, new Uint8Array(decryptedSymmetricKeyBuffer)));
+  
+      return decryptedSymmetricKeyBase64;
+    } catch (error) {
+      console.error('Error decrypting symmetric key:', error);
+      throw error; // Rethrow the error to be handled by the caller if needed
+    }
+  };
+
 // Convert PEM public key to CryptoKey
 export const importPublicKey = async (pemKey) => {
     const keyData = pemKey
@@ -43,7 +71,7 @@ export const importPrivateKey = async (pemPrivateKey) => {
     );
 };
 
-
+// Convert PEM symmetric key to CryptoKey
 export const importSymmetricKey = async (base64SymmetricKey) => {
     // Decode the Base64-encoded key
     const decodedKey = atob(base64SymmetricKey);
@@ -63,3 +91,19 @@ export const importSymmetricKey = async (base64SymmetricKey) => {
         ['encrypt', 'decrypt'] // Key can be used for encryption and decryption
     );
 };
+
+
+// Helper function to decode base64url-encoded strings
+export const base64UrlDecode = (base64Url) => {
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, '=');
+    const binaryString = atob(padded);
+    const arrayBuffer = new ArrayBuffer(binaryString.length);
+    const uint8Array = new Uint8Array(arrayBuffer);
+
+    for (let i = 0; i < binaryString.length; i++) {
+        uint8Array[i] = binaryString.charCodeAt(i);
+    }
+
+    return arrayBuffer;
+}

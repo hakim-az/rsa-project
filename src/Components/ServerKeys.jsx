@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { decryptSymmetricKey, importPublicKey, importPrivateKey, importSymmetricKey } from './utils/cryptoUtils';
 import backendKeys from '../keys.json'; 
-import { importPublicKey, importPrivateKey, importSymmetricKey } from './utils/cryptoUtils';
+
 
 
 const ServerKeys = () => {
@@ -11,13 +12,14 @@ const ServerKeys = () => {
     const [publicKey, setPublicKey] = useState()
     const [privateKey, setPrivateKey] = useState()
     const [symmetricKey, setSymmetricKey] = useState()
+    const [decryptedSymmetricKey, setDecryptedSymmetricKey] = useState()
 
     // Handle file change
     const handleFileChange = (event) => {
         const selectedFile = event.target.files[0];
         setFile(selectedFile);
     };
-    
+   
     // encrypt files using hybrid cryptography
     const encryptFile = async () => {
         if (!file || !publicKey || !symmetricKey ) return;
@@ -88,26 +90,41 @@ const ServerKeys = () => {
 
         const decryptedBlob = new Blob([decryptedBuffer], { type: file.type });
         setDecryptedFile(decryptedBlob);
-    };
-
-    // Fetch keys on component mount
-    useEffect(() => {
+    };   
+    
+      // Fetch keys on component mount
+      useEffect(() => {
         const fetchKeys = async () => {
-            try {
-                const publicKey = await importPublicKey(backendKeys.public_key);
-                const privateKey = await importPrivateKey(backendKeys.private_key);
-                const symmetricKey = await importSymmetricKey(backendKeys.symmetric_key_decrypted);
+          try {
+            // Decrypt symmetric key
+            const decryptedSymmetricKey = await decryptSymmetricKey(
+                backendKeys.symmetric_key_encrypted,
+                backendKeys.private_key
+            );
 
-                setPublicKey(publicKey);
-                setPrivateKey(privateKey);
-                setSymmetricKey(symmetricKey);
-            } catch (error) {
-                console.error('Error fetching keys:', error);
-            }
+            // Import public key
+            const publicKeyImported = await importPublicKey(backendKeys.public_key);
+    
+            // Import private key
+            const privateKeyImported = await importPrivateKey(backendKeys.private_key);
+
+            // Import symmetric key
+            const symmetricKeyImported = await importSymmetricKey(decryptedSymmetricKey);
+    
+            // Set the keys
+            setDecryptedSymmetricKey(decryptedSymmetricKey)
+            setPublicKey(publicKeyImported);
+            setPrivateKey(privateKeyImported);
+            setSymmetricKey(symmetricKeyImported);
+                
+          } catch (error) {
+            console.error('Error fetching keys:', error);
+          }
         };
-
+    
         fetchKeys();
-    }, []);
+      }, [decryptedSymmetricKey]);
+
 
     return (
         <div className='bg-blue-400 w-full h-screen'>

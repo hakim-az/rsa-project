@@ -1,34 +1,46 @@
 import { useState, useEffect } from 'react';
-import { decryptSymmetricKey, importPublicKey, importPrivateKey, importSymmetricKey } from './utils/cryptoUtils';
-import backendKeys from '../keys.json'; 
+import { importPublicKey, 
+         importPrivateKey,
+         generateSymmetricKey,  
+         encryptSymmetricKeyWithPublicKey, 
+         decryptStringWithPrivateKey,
+         importSymmetricKeyFromArrayBuffer } from './utils/cryptoUtils';
+import backendKeys from '../Keys.json'; 
 
 
 
 const ServerKeys = () => {
-    // States
+    // files
     const [file, setFile] = useState(null);
     const [encryptedFile, setEncryptedFile] = useState(null);
     const [decryptedFile, setDecryptedFile] = useState(null);
-    const [publicKey, setPublicKey] = useState()
-    const [privateKey, setPrivateKey] = useState()
-    const [symmetricKey, setSymmetricKey] = useState()
-    const [decryptedSymmetricKey, setDecryptedSymmetricKey] = useState()
+    // asymmetric keys
+    const [publicKey, setPublicKey] = useState(null)
+    const [privateKey, setPrivateKey] = useState(null)
+    // symmetric keys
+    const [symmetricKey, setSymmetricKey] = useState(null)
+    const [symmetricKeyEncrypted, setSymmetricKeyEncrypted] = useState(null)
+    const [symmetricKeyDecrypted, setSymmetricKeyDecrypted] = useState(null)
+    const [symmetricKeyToString, setSymmetricKeyToString] = useState(null)
+    const [symmetricKeyImported, setSymmetricKeyImported] = useState(null)
 
     // Handle file change
     const handleFileChange = (event) => {
         const selectedFile = event.target.files[0];
         setFile(selectedFile);
     };
+
+
    
     // encrypt files using hybrid cryptography
     const encryptFile = async () => {
-        if (!file || !publicKey || !symmetricKey ) return;
+        if (!file || !publicKey || !symmetricKeyImported ) return;
 
         // Generate a random IV (Initialization Vector)
         const iv = window.crypto.getRandomValues(new Uint8Array(12));
 
         // Get the raw symmetric key data
-        const rawSymmetricKey = await window.crypto.subtle.exportKey('raw', symmetricKey);
+        const rawSymmetricKey = await window.crypto.subtle.exportKey('raw', symmetricKeyImported);
 
         // Encrypt the actual file content with the symmetric key
         const encryptedBuffer = await window.crypto.subtle.encrypt(
@@ -92,38 +104,121 @@ const ServerKeys = () => {
         setDecryptedFile(decryptedBlob);
     };   
     
-      // Fetch keys on component mount
-      useEffect(() => {
-        const fetchKeys = async () => {
+    // STEP 01 : Import public and private keys
+    useEffect(() => {
+        const importKeys = async () => {
           try {
-            // Decrypt symmetric key
-            const decryptedSymmetricKey = await decryptSymmetricKey(
-                backendKeys.symmetric_key_encrypted,
-                backendKeys.private_key
-            );
+            // import public key
+            const importedPublicKey = await importPublicKey(backendKeys.public_key);
+            if (importedPublicKey !== null) {
+              setPublicKey(importedPublicKey);
+            }
 
-            // Import public key
-            const publicKeyImported = await importPublicKey(backendKeys.public_key);
-    
-            // Import private key
-            const privateKeyImported = await importPrivateKey(backendKeys.private_key);
-
-            // Import symmetric key
-            const symmetricKeyImported = await importSymmetricKey(decryptedSymmetricKey);
-    
-            // Set the keys
-            setDecryptedSymmetricKey(decryptedSymmetricKey)
-            setPublicKey(publicKeyImported);
-            setPrivateKey(privateKeyImported);
-            setSymmetricKey(symmetricKeyImported);
-                
+            // import private key
+            const importedPrivateKey = await importPrivateKey(backendKeys.private_key);
+            if (importedPrivateKey !== null) {
+              setPrivateKey(importedPrivateKey);
+            }
           } catch (error) {
-            console.error('Error fetching keys:', error);
+            console.error('Error importing public key:', error);
           }
         };
-    
-        fetchKeys();
-      }, [decryptedSymmetricKey]);
+      
+        importKeys();
+      }, []);
+
+    // STEP 02 : Generate symmetric key
+    useEffect(() => {
+        const generateSymKey = async () => {
+          try {
+            // generation
+            const generatedSymmetricKey = await generateSymmetricKey();
+            if (generatedSymmetricKey !== null) {
+              setSymmetricKey(generatedSymmetricKey);
+            }
+          } catch (error) {
+            console.error('Error importing public key:', error);
+          }
+        };
+      
+        generateSymKey();
+      }, []);
+
+
+    // STEP 03 : Encrypt symmetric key with public key
+    useEffect(() => {
+        const encryptSymKey = async () => {
+          try {
+            // generation
+            if(publicKey && symmetricKey){
+                const encryptedKey = await encryptSymmetricKeyWithPublicKey(publicKey, symmetricKey);
+                if (encryptedKey) {
+                  setSymmetricKeyEncrypted(encryptedKey);
+                }
+            }
+
+          } catch (error) {
+            console.error('Error importing public key:', error);
+          }
+        };
+      
+        encryptSymKey();
+      }, [publicKey, symmetricKey]);
+
+    // STEP 04 : convert the encrypted symmetric key to string
+    useEffect(() => {
+        const toString = (arrayBuffer) => {
+            const uint8Array = new Uint8Array(arrayBuffer);
+            const base64String = btoa(String.fromCharCode.apply(null, uint8Array));
+            return base64String;
+        };
+      
+        setSymmetricKeyToString(toString(symmetricKeyEncrypted));
+      }, [symmetricKeyEncrypted]);
+
+    //   POST symmetric key enctypted as string
+
+    //   GET symmetric key enctypted as string
+
+    // STEP 05 : decrypt  the received encrypted symmetric key using private key
+    useEffect(() => {
+        const decryptSymKey = async () => {
+          try {
+            // generation
+            if(privateKey && symmetricKeyToString){
+                const decryptedKey = await decryptStringWithPrivateKey(symmetricKeyToString, privateKey);
+                if (decryptedKey) {
+                    setSymmetricKeyDecrypted(decryptedKey);
+                }
+            }
+
+          } catch (error) {
+            console.error('Error importing public key:', error);
+          }
+        };
+      
+        decryptSymKey();
+      }, [privateKey, symmetricKeyToString]);
+
+    // STEP 06 : import the symmetric key
+    useEffect(() => {
+        const importSymKey = async () => {
+          try {
+            // generation
+            if(symmetricKeyDecrypted){
+                const decryptedKey = await importSymmetricKeyFromArrayBuffer(symmetricKeyDecrypted);
+                if (decryptedKey) {
+                    setSymmetricKeyImported(decryptedKey);
+                }
+            }
+
+          } catch (error) {
+            console.error('Error importing public key:', error);
+          }
+        };
+      
+        importSymKey();
+      }, [symmetricKeyDecrypted]);
 
 
     return (

@@ -25,6 +25,7 @@ const CryptoApp = () => {
     };
 
     const generateKeyPair = async () => {
+        // generate asymmetric keys
         const keyPair = await window.crypto.subtle.generateKey(
             {
                 name: 'RSA-OAEP',
@@ -55,6 +56,7 @@ const CryptoApp = () => {
 
     // generate symmetric key
     const generateSymmetricKey = async () => {
+        // generate symmetric key
         const key = await window.crypto.subtle.generateKey(
             {
                 name: 'AES-GCM',
@@ -82,8 +84,7 @@ const CryptoApp = () => {
         // Generate a random IV (Initialization Vector)
         const iv = window.crypto.getRandomValues(new Uint8Array(12));
 
-        // Get the raw symmetric key data
-        const rawSymmetricKey = await window.crypto.subtle.exportKey('raw', symmetricKey);
+
 
         // Encrypt the actual file content with the symmetric key
         const encryptedBuffer = await window.crypto.subtle.encrypt(
@@ -94,6 +95,9 @@ const CryptoApp = () => {
             symmetricKey,
             await file.arrayBuffer()
         );
+
+        // Get the raw symmetric key data
+        const rawSymmetricKey = await window.crypto.subtle.exportKey('raw', symmetricKey);
 
         // Encrypt the symmetric key with the public key
         const encryptedSymmetricKey = await window.crypto.subtle.encrypt(
